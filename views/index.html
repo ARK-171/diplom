@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кулинарные рецепты</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue-router@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  <style>
+    /* Анимации и дополнительные стили */
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.3s ease;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+    .back-button {
+      display: inline-block;
+      margin: 20px 0;
+      padding: 8px 16px;
+      background: #42b983;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Блок авторизации -->
+    <div v-if="!isLoggedIn">
+      <h2>{{ isRegistering ? 'Регистрация' : 'Авторизация' }}</h2>
+      <form @submit.prevent="submitAuth">
+        <div>
+          <label for="username">Имя пользователя:</label>
+          <input type="text" id="username" v-model="username" required>
+        </div>
+        <div>
+          <label for="password">Пароль:</label>
+          <input type="password" id="password" v-model="password" required>
+        </div>
+        <button type="submit">{{ isRegistering ? 'Зарегистрироваться' : 'Войти' }}</button>
+        <p v-if="authError" style="color: red;">{{ authError }}</p>
+      </form>
+      <button @click="toggleAuthMode">
+        {{ isRegistering ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться' }}
+      </button>
+    </div>
+    
+    <!-- Основной контент (после авторизации) -->
+    <div v-if="isLoggedIn">
+      <p>Вы вошли как {{ username }}</p>
+      <button @click="logout">Выйти</button>
+      
+      <!-- Блок поиска (виден всегда) -->
+      <div class="search-container">
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="Поиск рецептов"
+          @input="searchRecipes">
+        <button @click="searchRecipes">Поиск</button>
+      </div>
+
+      <button @click="toggleAddRecipeForm" class="add-recipe-button">
+        {{ showAddRecipeForm ? 'Скрыть форму' : 'Добавить рецепт' }}
+      </button>
+      <add-recipe-form 
+        v-if="showAddRecipeForm"
+        @recipe-created="fetchRecipes"
+        @cancel="showAddRecipeForm = false">
+      </add-recipe-form>
+
+      <!-- Список рецептов (только на главной) -->
+      <transition name="fade">
+        <recipe-list
+          v-if="$route.path === '/'"
+          :recipes="recipes" />
+      </transition>
+
+      
+
+      <!-- Детали рецепта (автоматически показывается через router-view) -->
+      <router-view v-if="$route.path.startsWith('/recipes/')"></router-view>
+    </div>
+  </div>
+
+  <!-- Подключаем библиотеки -->
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  
+  <!-- Подключаем наши скрипты -->
+  <script type="module" src="/js/router.js"></script>
+  <script type="module" src="/js/RecipeList.js"></script>
+  <script type="module" src="/js/RecipeDetail.js"></script>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
